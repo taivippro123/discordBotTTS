@@ -2,12 +2,10 @@ const { Client, GatewayIntentBits, Partials } = require('discord.js');
 const { joinVoiceChannel, createAudioPlayer, createAudioResource } = require('@discordjs/voice');
 const fs = require('fs');
 const path = require('path');
-const ffmpeg = require('ffmpeg-static');
 const textToSpeech = require('@google-cloud/text-to-speech');
 require('dotenv').config();
 
 // 🟢 Lấy credentials từ biến môi trường (Render)
-
 const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
 const ttsClient = new textToSpeech.TextToSpeechClient({
     credentials: credentials
@@ -26,31 +24,45 @@ const client = new Client({
 let connection = null;
 let player = createAudioPlayer();
 const targetChannelId = '1319723648822808638'; // 🛑 Thay bằng ID kênh bot sẽ đọc tin nhắn
-//Kênh khó nói Addict 
+//Kênh khó nói Addcict
 // 🟢 Bot khởi động
 client.once('ready', () => {
     console.log(`✅ Bot đã đăng nhập thành công với tên: ${client.user.tag}`);
 });
 
-// 🟢 Lệnh /tai để bot tham gia voice channel
-client.on('messageCreate', async message => {
-    if (message.content === '/tai' && message.member.voice.channel) {
-        const voiceChannel = message.member.voice.channel;
-        connection = joinVoiceChannel({
-            channelId: voiceChannel.id,
-            guildId: voiceChannel.guild.id,
-            adapterCreator: voiceChannel.guild.voiceAdapterCreator
-        });
-        console.log('🔊 Bot đã tham gia voice channel:', voiceChannel.name);
-        message.reply('✅ Bot đã vào voice channel!');
-    }
-});
-
 // 🟢 Khi có tin nhắn trong kênh chỉ định, bot đọc bằng Google TTS
 client.on('messageCreate', async message => {
     if (message.channel.id === targetChannelId && !message.author.bot) {
+        if (!connection) {
+            const voiceChannel = message.guild.members.me.voice.channel || message.member.voice.channel;
+            if (voiceChannel) {
+                connection = joinVoiceChannel({
+                    channelId: voiceChannel.id,
+                    guildId: voiceChannel.guild.id,
+                    adapterCreator: voiceChannel.guild.voiceAdapterCreator
+                });
+                console.log('🔊 Bot đã tự động vào voice channel:', voiceChannel.name);
+            } else {
+                console.log('⚠️ Không tìm thấy voice channel.');
+                return;
+            }
+        }
         console.log(`💬 Tin nhắn từ ${message.author.username}: ${message.content}`);
         await playTTS(message.content);
+    }
+});
+
+// 🟢 Lệnh /cut để bot rời khỏi voice channel
+client.on('messageCreate', message => {
+    if (message.content === '/cut') {
+        if (connection) {
+            connection.destroy();
+            connection = null;
+            console.log('🚪 Bot đã rời khỏi voice channel.');
+            message.reply('❌ Bot đã rời khỏi voice channel.');
+        } else {
+            message.reply('⚠️ Bot chưa ở trong voice channel.');
+        }
     }
 });
 
@@ -68,7 +80,7 @@ async function playTTS(text) {
     };
 
     const [response] = await ttsClient.synthesizeSpeech(request);
-    
+
     if (!response.audioContent) {
         console.error('❌ Google TTS không trả về dữ liệu âm thanh');
         return;
