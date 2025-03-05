@@ -5,6 +5,12 @@ const path = require('path');
 const textToSpeech = require('@google-cloud/text-to-speech');
 require('dotenv').config();
 
+// 🟢 Lấy credentials từ biến môi trường (Render)
+const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
+const ttsClient = new textToSpeech.TextToSpeechClient({
+    credentials: credentials
+});
+
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -15,17 +21,16 @@ const client = new Client({
     partials: [Partials.Channel]
 });
 
-const ttsClient = new textToSpeech.TextToSpeechClient();
 let connection = null;
 let player = createAudioPlayer();
-const targetChannelId = '716700036339335189'; // 🛑 Thay bằng ID kênh chat bot sẽ đọc tin nhắn
+const targetChannelId = '716700036339335189'; // 🛑 Thay bằng ID kênh bot sẽ đọc tin nhắn
 
 // 🟢 Bot khởi động
 client.once('ready', () => {
     console.log(`✅ Bot đã đăng nhập thành công với tên: ${client.user.tag}`);
 });
 
-// 🟢 Lệnh /start để bot tham gia voice channel
+// 🟢 Lệnh /tai để bot tham gia voice channel
 client.on('messageCreate', async message => {
     if (message.content === '/tai' && message.member.voice.channel) {
         const voiceChannel = message.member.voice.channel;
