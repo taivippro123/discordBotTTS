@@ -106,6 +106,16 @@ async function playTTS(text) {
     console.log('🔊 Đang phát âm thanh...');
 }
 
+// 🟢 Thêm server Express để giữ bot luôn online trên Render
+const express = require("express");
+const app = express();
+
+app.get("/ping", (req, res) => {
+    res.send("Bot is alive");
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🌍 Ping server đang chạy tại cổng ${PORT}`));
 
 // 🟢 Đăng nhập bot
 client.login(process.env.TOKEN);
