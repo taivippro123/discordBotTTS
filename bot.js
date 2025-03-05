@@ -2,6 +2,7 @@ const { Client, GatewayIntentBits, Partials } = require('discord.js');
 const { joinVoiceChannel, createAudioPlayer, createAudioResource } = require('@discordjs/voice');
 const fs = require('fs');
 const path = require('path');
+const ffmpeg = require('ffmpeg-static');
 const textToSpeech = require('@google-cloud/text-to-speech');
 require('dotenv').config();
 
