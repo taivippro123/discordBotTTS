@@ -68,7 +68,7 @@ client.on('messageCreate', message => {
 
 async function playTTS(text) {
     if (!connection) {
-        console.log('❌ Bot chưa kết nối voice channel.');
+        console.log('❌ Bot chưa kết nối voice channel hoặc đã rời đi.');
         return;
     }
 
@@ -90,6 +90,12 @@ async function playTTS(text) {
     fs.writeFileSync(filePath, response.audioContent);
     console.log('✅ File TTS đã được lưu:', filePath);
 
+    // 🔹 Kiểm tra lại kết nối trước khi phát
+    if (!connection) {
+        console.log('⚠️ Bot đã rời khỏi voice channel, không thể phát âm thanh.');
+        return;
+    }
+
     const resource = createAudioResource(filePath, {
         inlineVolume: true
     });
@@ -99,6 +105,7 @@ async function playTTS(text) {
 
     console.log('🔊 Đang phát âm thanh...');
 }
+
 
 // 🟢 Đăng nhập bot
 client.login(process.env.TOKEN);
