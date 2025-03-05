@@ -7,7 +7,7 @@ const textToSpeech = require('@google-cloud/text-to-speech');
 require('dotenv').config();
 
 // 🟢 Lấy credentials từ biến môi trường (Render)
-console.log("🔍 GOOGLE_APPLICATION_CREDENTIALS_JSON:", process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
+
 const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
 const ttsClient = new textToSpeech.TextToSpeechClient({
     credentials: credentials
@@ -25,8 +25,8 @@ const client = new Client({
 
 let connection = null;
 let player = createAudioPlayer();
-const targetChannelId = '716700036339335189'; // 🛑 Thay bằng ID kênh bot sẽ đọc tin nhắn
-
+const targetChannelId = '1319723648822808638'; // 🛑 Thay bằng ID kênh bot sẽ đọc tin nhắn
+//Kênh khó nói Addict 
 // 🟢 Bot khởi động
 client.once('ready', () => {
     console.log(`✅ Bot đã đăng nhập thành công với tên: ${client.user.tag}`);
