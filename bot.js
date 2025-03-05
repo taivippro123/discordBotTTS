@@ -6,6 +6,7 @@ const textToSpeech = require('@google-cloud/text-to-speech');
 require('dotenv').config();
 
 // 🟢 Lấy credentials từ biến môi trường (Render)
+console.log("🔍 GOOGLE_APPLICATION_CREDENTIALS_JSON:", process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
 const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
 const ttsClient = new textToSpeech.TextToSpeechClient({
     credentials: credentials
@@ -52,10 +53,13 @@ client.on('messageCreate', async message => {
     }
 });
 
-// 📌 Hàm phát TTS
 async function playTTS(text) {
-    if (!connection) return;
+    if (!connection) {
+        console.log('❌ Bot chưa kết nối voice channel.');
+        return;
+    }
 
+    console.log('🔍 Đang gửi yêu cầu tới Google TTS...');
     const request = {
         input: { text: text },
         voice: { languageCode: 'vi-VN', ssmlGender: 'NEUTRAL' },
@@ -63,12 +67,24 @@ async function playTTS(text) {
     };
 
     const [response] = await ttsClient.synthesizeSpeech(request);
+    
+    if (!response.audioContent) {
+        console.error('❌ Google TTS không trả về dữ liệu âm thanh');
+        return;
+    }
+
     const filePath = path.join(__dirname, 'tts.mp3');
     fs.writeFileSync(filePath, response.audioContent);
+    console.log('✅ File TTS đã được lưu:', filePath);
 
-    const resource = createAudioResource(filePath);
+    const resource = createAudioResource(filePath, {
+        inlineVolume: true
+    });
+
     player.play(resource);
     connection.subscribe(player);
+
+    console.log('🔊 Đang phát âm thanh...');
 }
 
 // 🟢 Đăng nhập bot
