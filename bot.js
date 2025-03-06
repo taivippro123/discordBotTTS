@@ -23,8 +23,8 @@ const client = new Client({
 
 let connection = null;
 let player = createAudioPlayer();
-const targetChannelIds = ['1319723648822808638', '716700036339335189'];// 🛑 Danh sách ID kênh bot sẽ đọc tin nhắn, chuột phải ở kênh -> sao chép ID kênh
-                        // khó nói addict         bot-chat taivippro123
+const targetChannelIds = ['1319723648822808638', '716700036339335189', '1346977312196788316'];// 🛑 Danh sách ID kênh bot sẽ đọc tin nhắn, chuột phải ở kênh -> sao chép ID kênh
+                        // khó nói addict         bot-chat taivippro123  khó nói addict
 
 // 🟢 Bot khởi động
 client.once('ready', () => {
