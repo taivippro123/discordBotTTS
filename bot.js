@@ -22,9 +22,9 @@ const client = new Client({
 });
 
 let connection = null;
-let player = createAudioPlayer(); // 🛑 Danh sách ID kênh bot sẽ đọc tin nhắn //
-const targetChannelIds = ['1319723648822808638', '716700036339335189'];  //🛑 Để lấy ID kênh, click chuột phải vào kênh và chọn "Copy ID"
-                        //khó-nói addict           bot-chat taivippro123
+let player = createAudioPlayer();
+const targetChannelIds = ['1319723648822808638', '716700036339335189']; //Chuột phải vào kênh chat -> Sao chép ID kênh chat
+                        //khó-nói - addict         bot-chat taivippro123
 // 🟢 Bot khởi động
 client.once('ready', () => {
     console.log(`✅ Bot đã đăng nhập thành công với tên: ${client.user.tag}`);
@@ -33,20 +33,30 @@ client.once('ready', () => {
 // 🟢 Khi có tin nhắn trong kênh chỉ định, bot đọc bằng Google TTS
 client.on('messageCreate', async message => {
     if (targetChannelIds.includes(message.channel.id) && !message.author.bot) {
-        if (!connection) {
-            const voiceChannel = message.guild.members.me.voice.channel || message.member.voice.channel;
-            if (voiceChannel) {
-                connection = joinVoiceChannel({
-                    channelId: voiceChannel.id,
-                    guildId: voiceChannel.guild.id,
-                    adapterCreator: voiceChannel.guild.voiceAdapterCreator
-                });
-                console.log('🔊 Bot đã tự động vào voice channel:', voiceChannel.name);
-            } else {
-                console.log('⚠️ Không tìm thấy voice channel.');
-                return;
-            }
+        const userVoiceChannel = message.member.voice.channel; // 🔹 Kênh voice của người gửi
+
+        if (!userVoiceChannel) {
+            console.log(`⚠️ ${message.author.username} không ở trong voice channel.`);
+            return;
         }
+
+        // 🔹 Nếu bot đang ở một kênh voice khác -> Rời kênh cũ
+        if (connection && connection.joinConfig.channelId !== userVoiceChannel.id) {
+            console.log('🔄 Chuyển kênh: Bot rời kênh cũ và vào kênh mới.');
+            connection.destroy();
+            connection = null;
+        }
+
+        // 🔹 Nếu bot chưa kết nối -> Tham gia voice channel của người gửi
+        if (!connection) {
+            connection = joinVoiceChannel({
+                channelId: userVoiceChannel.id,
+                guildId: userVoiceChannel.guild.id,
+                adapterCreator: userVoiceChannel.guild.voiceAdapterCreator
+            });
+            console.log('🔊 Bot đã vào voice channel:', userVoiceChannel.name);
+        }
+
         console.log(`💬 Tin nhắn từ ${message.author.username}: ${message.content}`);
         await playTTS(message.content);
     }
@@ -90,15 +100,12 @@ async function playTTS(text) {
     fs.writeFileSync(filePath, response.audioContent);
     console.log('✅ File TTS đã được lưu:', filePath);
 
-    // 🔹 Kiểm tra lại kết nối trước khi phát
     if (!connection) {
         console.log('⚠️ Bot đã rời khỏi voice channel, không thể phát âm thanh.');
         return;
     }
 
-    const resource = createAudioResource(filePath, {
-        inlineVolume: true
-    });
+    const resource = createAudioResource(filePath, { inlineVolume: true });
 
     player.play(resource);
     connection.subscribe(player);
