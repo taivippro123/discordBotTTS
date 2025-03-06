@@ -22,9 +22,9 @@ const client = new Client({
 });
 
 let connection = null;
-let player = createAudioPlayer();
-const targetChannelId = '1319723648822808638'; // 🛑 Thay bằng ID kênh bot sẽ đọc tin nhắn
-//Kênh khó nói Addcict
+let player = createAudioPlayer(); // 🛑 Danh sách ID kênh bot sẽ đọc tin nhắn //
+const targetChannelIds = ['1319723648822808638', '716700036339335189'];  //🛑 Để lấy ID kênh, click chuột phải vào kênh và chọn "Copy ID"
+                        //khó-nói addict           bot-chat taivippro123
 // 🟢 Bot khởi động
 client.once('ready', () => {
     console.log(`✅ Bot đã đăng nhập thành công với tên: ${client.user.tag}`);
@@ -32,7 +32,7 @@ client.once('ready', () => {
 
 // 🟢 Khi có tin nhắn trong kênh chỉ định, bot đọc bằng Google TTS
 client.on('messageCreate', async message => {
-    if (message.channel.id === targetChannelId && !message.author.bot) {
+    if (targetChannelIds.includes(message.channel.id) && !message.author.bot) {
         if (!connection) {
             const voiceChannel = message.guild.members.me.voice.channel || message.member.voice.channel;
             if (voiceChannel) {
