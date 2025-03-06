@@ -1,5 +1,5 @@
 const { Client, GatewayIntentBits, Partials } = require('discord.js');
-const { joinVoiceChannel, createAudioPlayer, createAudioResource } = require('@discordjs/voice');
+const { joinVoiceChannel, createAudioPlayer, createAudioResource, getVoiceConnection } = require('@discordjs/voice');
 const fs = require('fs');
 const path = require('path');
 const textToSpeech = require('@google-cloud/text-to-speech');
@@ -23,8 +23,9 @@ const client = new Client({
 
 let connection = null;
 let player = createAudioPlayer();
-const targetChannelIds = ['1319723648822808638', '716700036339335189']; //Chuột phải vào kênh chat -> Sao chép ID kênh chat
-                        //khó-nói - addict         bot-chat taivippro123
+const targetChannelIds = ['1319723648822808638', '716700036339335189'];// 🛑 Danh sách ID kênh bot sẽ đọc tin nhắn, chuột phải ở kênh -> sao chép ID kênh
+                        // khó nói addict         bot-chat taivippro123
+
 // 🟢 Bot khởi động
 client.once('ready', () => {
     console.log(`✅ Bot đã đăng nhập thành công với tên: ${client.user.tag}`);
@@ -59,6 +60,22 @@ client.on('messageCreate', async message => {
 
         console.log(`💬 Tin nhắn từ ${message.author.username}: ${message.content}`);
         await playTTS(message.content);
+    }
+});
+
+// 🟢 Tự động rời kênh nếu không còn ai (sự kiện voiceStateUpdate)
+client.on('voiceStateUpdate', (oldState, newState) => {
+    if (!connection) return;
+
+    const voiceChannel = newState.guild.channels.cache.get(connection.joinConfig.channelId);
+    if (!voiceChannel) return;
+
+    const members = voiceChannel.members.filter(member => !member.user.bot); // Lọc ra người dùng (không phải bot)
+
+    if (members.size === 0) {
+        console.log('🔕 Không còn ai trong kênh, bot sẽ rời.');
+        connection.destroy();
+        connection = null;
     }
 });
 
