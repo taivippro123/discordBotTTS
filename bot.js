@@ -143,3 +143,11 @@ app.listen(PORT, () => console.log(`🌍 Ping server đang chạy tại cổng $
 
 // 🟢 Đăng nhập bot
 client.login(process.env.TOKEN);
+
+// 🟢 Tự ping chính mình mỗi 4 phút để giữ bot luôn hoạt động (Render Free Tier sẽ auto-sleep nếu không có request)
+setInterval(() => {
+    fetch(`https://discordbottts.onrender.com/ping`)
+        .then(res => res.text())
+        .then(data => console.log("✅ Self-ping thành công:", data))
+        .catch(err => console.error("❌ Self-ping lỗi:", err.message));
+}, 4 * 60 * 1000);
